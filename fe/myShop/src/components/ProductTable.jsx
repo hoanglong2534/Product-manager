@@ -1,18 +1,31 @@
 import React, { useState } from 'react';
 import { Table, Button, Space } from 'antd';
 import DeleteModal from './DeleteModal';
+import EditModal from './EditModal';
 
 const ProductTable = () => {
-
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
 
   const handleEdit = (id) => {
-    console.log('Sửa sản phẩm ID:', id);
-    // Thêm logic sửa ở đây, ví dụ mở modal sửa
+    const product = data.find((item) => item.id === id);
+    setSelectedProduct(product);
+    setIsEditModalOpen(true);
   };
 
-  const handleDelete = (id) => {
-    console.log('Xóa sản phẩm ID:', id);
-    // Thêm logic xóa ở đây, ví dụ gọi API xóa hoặc confirm xóa
+  const handleEditOk = () => {
+    console.log('Cập nhật sản phẩm:', selectedProduct);
+    setIsEditModalOpen(false);
+    // Thêm logic lưu thay đổi, ví dụ gọi API cập nhật sản phẩm
+  };
+
+  const handleEditCancel = () => {
+    setIsEditModalOpen(false);
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setSelectedProduct({ ...selectedProduct, [name]: value });
   };
 
   const columns = [
@@ -30,24 +43,17 @@ const ProductTable = () => {
       key: 'action',
       render: (_, record) => (
         <Space size="middle">
-          <Button
-
-            type="default"
-            onClick={() => handleEdit(record.id)}
-          >
+          <Button type="default" onClick={() => handleEdit(record.id)}>
             Sửa
           </Button>
-          <Button
-            type="default"
-            danger
-            onClick={showModal}
-          >
+          <Button type="default" danger onClick={showModal}>
             Xóa
           </Button>
         </Space>
       ),
     },
   ];
+
   const data = [
     {
       id: 1,
@@ -62,135 +68,165 @@ const ProductTable = () => {
     },
     {
       id: 2,
-      name: 'Samsung Smart TV 55"',
-      description: 'Smart TV 4K UHD, tích hợp Netflix, YouTube.',
-      price: 15000000,
+      name: 'Samsung Galaxy S21',
+      description: 'Điện thoại thông minh với camera chất lượng cao.',
+      price: 20000000,
       brand: 'Samsung',
-      category: 'Tivi',
-      power: 150,
-      rating: 3.0,
+      category: 'Điện thoại',
+      power: 100,
+      rating: 4.5,
       stock: 5,
     },
     {
       id: 3,
-      name: 'Sharp Refrigerator 300L',
-      description: 'Tủ lạnh 2 cửa, ngăn đá trên, tiết kiệm điện.',
-      price: 6900000,
-      brand: 'Sharp',
-      category: 'Tủ lạnh',
-      power: 120,
-      rating: 3.0,
-      stock: 8,
+      name: 'Sony WH-1000XM4',
+      description: 'Tai nghe chống ồn, âm thanh chất lượng cao.',
+      price: 9000000,
+      brand: 'Sony',
+      category: 'Âm thanh',
+      power: 111,
+      rating: 4.8,
+      stock: 20,
     },
     {
       id: 4,
-      name: 'Electrolux Washing Machine 8kg',
-      description: 'Giặt sạch mạnh mẽ, inverter tiết kiệm điện.',
-      price: 7200000,
-      brand: 'Electrolux',
-      category: 'Máy giặt',
-      power: 200,
-      rating: 5.0,
-      stock: 6,
+      name: 'LG OLED55CXPTA',
+      description: 'TV OLED 4K, hình ảnh sắc nét.',
+      price: 30000000,
+      brand: 'LG',
+      category: 'TV',
+      power: 123,
+      rating: 4.7,
+      stock: 8,
     },
     {
       id: 5,
-      name: 'LG Microwave Oven 23L',
-      description: 'Lò vi sóng có nướng, nhiều chế độ nấu.',
-      price: 2200000,
-      brand: 'LG',
-      category: 'Lò vi sóng',
-      power: 800,
-      rating: 5.0,
-      stock: 15,
-    },
-    {
-      id: 6,
-      name: 'Philips Air Fryer XL',
-      description: 'Nồi chiên không dầu dung tích lớn, dễ vệ sinh.',
-      price: 2800000,
-      brand: 'Philips',
-      category: 'Nồi chiên không dầu',
-      power: 1400,
-      rating: 5.0,
+      name: 'Dell XPS 13',
+      description: 'Laptop mỏng nhẹ, hiệu năng cao.',
+      price: 25000000,
+      brand: 'Dell',
+      category: 'Laptop',
+      power: 100,
+      rating: 4.6,
       stock: 12,
     },
     {
+      id: 6,
+      name: 'Apple MacBook Air M1',
+      description: 'Laptop mỏng nhẹ, hiệu năng cao.',
+      price: 30000000,
+      brand: 'Apple',
+      category: 'Laptop',
+      power: 11,
+      rating: 4.9,
+      stock: 15,
+    },
+    {
       id: 7,
-      name: 'Daikin Inverter 1.5HP',
-      description: 'Làm lạnh nhanh, tiết kiệm điện, bền bỉ.',
-      price: 8900000,
-      brand: 'Daikin',
-      category: 'Điều hòa',
-      power: 12000,
-      rating: 1.0,
-      stock: 4,
+      name: 'Bose QuietComfort 35 II',
+      description: 'Tai nghe chống ồn, âm thanh chất lượng cao.',
+      price: 8000000,
+      brand: 'Bose',
+      category: 'Âm thanh',
+      power: 12,
+      rating: 4.5,
+      stock: 10,
     },
     {
       id: 8,
-      name: 'Sony Soundbar 2.1',
-      description: 'Âm thanh vòm sống động, dễ kết nối Bluetooth.',
-      price: 4100000,
-      brand: 'Sony',
-      category: 'Loa',
+      name: 'Samsung Galaxy Tab S7',
+      description: 'Máy tính bảng Android với hiệu năng mạnh mẽ.',
+      price: 15000000,
+      brand: 'Samsung',
+      category: 'Máy tính bảng',
       power: 100,
-      rating: 4.0,
+      rating: 4.4,
       stock: 7,
     },
     {
       id: 9,
-      name: 'Midea Water Heater 15L',
-      description: 'Máy nước nóng chống giật, tiết kiệm điện.',
-      price: 2500000,
-      brand: 'Midea',
-      category: 'Máy nước nóng',
-      power: 1500,
-      rating: 4.0,
-      stock: 9,
+      name: 'Nikon D3500',
+      description: 'Máy ảnh DSLR cho người mới bắt đầu.',
+      price: 12000000,
+      brand: 'Nikon',
+      category: 'Máy ảnh',
+      power: 100,
+      rating: 4.3,
+      stock: 5,
     },
     {
       id: 10,
-      name: 'Sony Soundbar 2.1',
-      description: 'Âm thanh vòm sống động, dễ kết nối Bluetooth.',
-      price: 4100000,
-      brand: 'Sony',
-      category: 'Loa',
+      name: 'Canon EOS M50',
+      description: 'Máy ảnh mirrorless với khả năng quay video 4K.',
+      price: 15000000,
+      brand: 'Canon',
+      category: 'Máy ảnh',
       power: 100,
-      rating: 4.0,
-      stock: 7,
+      rating: 4.6,
+      stock: 8,
     },
     {
       id: 11,
-      name: 'Midea Water Heater 15L',
-      description: 'Máy nước nóng chống giật, tiết kiệm điện.',
-      price: 2500000,
-      brand: 'Midea',
-      category: 'Máy nước nóng',
-      power: 1500,
-      rating: 4.0,
-      stock: 9,
+      name: 'Apple iPhone 13 Pro',
+      description: 'Điện thoại thông minh với camera chất lượng cao.',
+      price: 30000000,
+      brand: 'Apple',
+      category: 'Điện thoại',
+      power: 100,
+      rating: 4.9,
+      stock: 3,
     },
-  ];
+    {
+      id: 12,
+      name: 'Xiaomi Mi Band 6',
+      description: 'Vòng đeo tay thông minh với nhiều tính năng theo dõi sức khỏe.',
+      price: 1000000,
+      brand: 'Xiaomi',
+      category: 'Thiết bị đeo',
+      power: 100,
+      rating: 4.5,
+      stock: 20,
+    },
+    {
+      id: 13,
+      name: 'Asus ROG Zephyrus G14',
+      description: 'Laptop gaming với hiệu năng mạnh mẽ.',
+      price: 40000000,
+      brand: 'Asus',
+      category: 'Laptop',
+      power: 100,
+      rating: 4.8,
+      stock: 5,
+    },
 
+      
+    
+  ];
 
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const showModal = () => {
     setIsModalOpen(true);
   };
+
   const handleOk = () => {
     setIsModalOpen(false);
   };
+
   const handleCancel = () => {
     setIsModalOpen(false);
   };
+
   return (
     <div style={{ padding: 24 }}>
       <Table columns={columns} dataSource={data} rowKey="id" rowSelection={{}} pagination={{ pageSize: 10 }} />
-      <DeleteModal
-        open={isModalOpen}
-        onOk={handleOk}
-        onCancel={handleCancel}
+      <DeleteModal open={isModalOpen} onOk={handleOk} onCancel={handleCancel} />
+      <EditModal
+        open={isEditModalOpen}
+        product={selectedProduct}
+        onOk={handleEditOk}
+        onCancel={handleEditCancel}
+        onInputChange={handleInputChange}
       />
     </div>
   );
