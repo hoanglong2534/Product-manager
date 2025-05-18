@@ -1,12 +1,27 @@
-import { Layout, Button, Input, Form, Select, InputNumber } from 'antd';
+import { Layout, Button, Input, Form, Select, InputNumber, Modal } from 'antd';
 import { SearchOutlined } from '@ant-design/icons';
 import React, { useState } from 'react';
 import ProductTable from './ProductTable';
+import DeleteModal from './DeleteModal';
 const { Content } = Layout;
 
 
 export default function ProductList() {
     const [showAdvanced, setShowAdvanced] = useState(false);
+
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
+    const showModal = () => {
+        setIsModalOpen(true);
+    };
+    const handleOk = () => {
+        setIsModalOpen(false);
+    };
+    const handleCancel = () => {
+        setIsModalOpen(false);
+    };
+
+    
 
     return (
         <>
@@ -63,13 +78,17 @@ export default function ProductList() {
                         <h1 className='text-4xl w-full max-w-3xl'>Danh sách sản phẩm</h1>
                         <div className="flex space-x-4 mt-4">
                             <Button type="primary" shape="round">Thêm sản phẩm</Button>
-                            <Button type="primary" shape="round">Xóa</Button>
+                            <Button type="primary" shape="round" onClick={showModal} >Xóa</Button>
                         </div>
                     </div>
                     <ProductTable />
                 </div>
 
-
+                <DeleteModal
+                    open={isModalOpen}
+                    onOk={handleOk}
+                    onCancel={handleCancel}
+                />
             </Content>
 
 
