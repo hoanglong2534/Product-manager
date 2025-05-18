@@ -42,7 +42,6 @@ export default function ProductList() {
                         Tìm kiếm
                     </Button>
                 </div>
-
                 {showAdvanced && (
                     <div className="w-full max-w-5xl bg-white rounded shadow p-8 mb-5">
                         <Form layout="vertical">
@@ -59,6 +58,22 @@ export default function ProductList() {
                                 </Form.Item>
                                 <Form.Item label="Giá đến" name="priceTo" className="mb-0">
                                     <InputNumber className="w-full" placeholder="Giá đến" min={0} />
+                                </Form.Item>
+                                <Form.Item label="Công suất từ" name="powerFrom" className="mb-0">
+                                    <InputNumber className="w-full" placeholder="Công suất từ" min={0} />
+                                </Form.Item>
+                                <Form.Item label="Công suất đến" name="powerTo" className="mb-0">
+                                    <InputNumber className="w-full" placeholder="Công suất đến" min={0} />
+                                </Form.Item>
+                                <Form.Item label="Số sao" name="star" className="mb-0">
+                                    <Select placeholder="Chọn số sao">
+                                        <Select.Option value="all">Tất cả</Select.Option>
+                                        <Select.Option value="1">1 Sao</Select.Option>
+                                        <Select.Option value="2">2 Sao</Select.Option>
+                                        <Select.Option value="3">3 Sao</Select.Option>
+                                        <Select.Option value="4">4 Sao</Select.Option>
+                                        <Select.Option value="5">5 Sao</Select.Option>
+                                    </Select>
                                 </Form.Item>
                             </div>
                         </Form>
@@ -85,7 +100,7 @@ export default function ProductList() {
                     onOk={handleAddOk}
                     onCancel={handleAddCancel}
                     newProduct={{}} // Truyền sản phẩm mới nếu cần
-                    onInputChange={() => {}} // Thêm logic xử lý nếu cần
+                    onInputChange={() => { }} // Thêm logic xử lý nếu cần
                 />
 
                 <DeleteModal
