@@ -6,6 +6,9 @@ import AddModal from './AddModal';
 import DeleteModal from './DeleteModal';
 import { deleteProducts } from '../api/deleteProduct';
 import { getAllProducts } from '../api/getAllProduct';
+import { getSearchOptions } from '../api/getSearchOptions';
+import { searchProducts } from '../api/searchProducts';
+import { addProduct } from '../api/addProduct';
 
 const { Content } = Layout;
 
@@ -17,6 +20,21 @@ export default function ProductList() {
     const [selectedRowKeys, setSelectedRowKeys] = useState([]);
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [categories, setCategories] = useState([]);
+    const [newProduct, setNewProduct] = useState({});
+    const [searchName, setSearchName] = useState('');
+    const [form] = Form.useForm();
+
+    // Thêm hàm xử lý thay đổi input cho form thêm sản phẩm
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setNewProduct(prev => ({ ...prev, [name]: value }));
+    };
+
+    // Xử lý thay đổi cho các input không phải là input thông thường (như Select, InputNumber)
+    const handleCustomInputChange = (name, value) => {
+        setNewProduct(prev => ({ ...prev, [name]: value }));
+    };
 
     // Tải danh sách sản phẩm khi component mount
     useEffect(() => {
@@ -36,8 +54,39 @@ export default function ProductList() {
         fetchProducts();
     }, []);
 
-    const handleAddOk = () => {
-        setIsAddModalOpen(false);
+    // Tải dữ liệu tìm kiếm
+    useEffect(() => {
+        const fetchSearchOptions = async () => {
+            try {
+                const data = await getSearchOptions();
+                console.log('Dữ liệu tìm kiếm:', data);
+                
+                // Cập nhật state với dữ liệu từ API
+                if (data && data.categories) {
+                    setCategories(data.categories);
+                }
+            } catch (error) {
+                console.error('Lỗi khi tải dữ liệu tìm kiếm:', error);
+            }
+        };
+
+        fetchSearchOptions();
+    }, []);
+
+    const handleAddOk = async () => {
+        try {
+            await addProduct(newProduct);
+            message.success('Thêm sản phẩm thành công');
+            setIsAddModalOpen(false);
+            setNewProduct({});
+            
+            // Tải lại danh sách sản phẩm
+            const data = await getAllProducts();
+            setProducts(data);
+        } catch (error) {
+            console.error('Lỗi khi thêm sản phẩm:', error);
+            message.error('Không thể thêm sản phẩm');
+        }
     };
 
     const handleAddCancel = () => {
@@ -74,28 +123,117 @@ export default function ProductList() {
         onChange: onSelectChange,
     };
 
+    const handleSearch = async () => {
+        try {
+            setLoading(true);
+            
+            // Lấy giá trị từ form
+            let values = {};
+            if (showAdvanced) {
+                try {
+                    values = await form.validateFields();
+                } catch (error) {
+                    console.log('Form validation failed:', error);
+                }
+            }
+            
+            // Chuẩn bị dữ liệu tìm kiếm
+            const searchParams = {
+                name: searchName || undefined,
+                ...values
+            };
+            
+            // Loại bỏ các trường không có giá trị
+            Object.keys(searchParams).forEach(key => {
+                if (searchParams[key] === undefined || searchParams[key] === '' || searchParams[key] === null || searchParams[key] === 'all') {
+                    delete searchParams[key];
+                }
+            });
+            
+            console.log('Tham số tìm kiếm:', searchParams);
+            
+            // Kiểm tra xem có tham số tìm kiếm không
+            if (Object.keys(searchParams).length === 0) {
+                console.log('Không có tham số tìm kiếm, lấy tất cả sản phẩm');
+                const data = await getAllProducts();
+                setProducts(data);
+                setLoading(false);
+                return;
+            }
+            
+            // Gọi API tìm kiếm
+            try {
+                const data = await searchProducts(searchParams);
+                console.log('Kết quả tìm kiếm:', data);
+                
+                if (Array.isArray(data)) {
+                    setProducts(data);
+                    if (data.length === 0) {
+                        message.info('Không tìm thấy sản phẩm nào phù hợp');
+                    }
+                } else {
+                    console.error('Dữ liệu trả về không phải là mảng:', data);
+                    message.error('Dữ liệu trả về không đúng định dạng');
+                    
+                    // Nếu dữ liệu không phải mảng, lấy tất cả sản phẩm
+                    const allData = await getAllProducts();
+                    setProducts(allData);
+                }
+            } catch (searchError) {
+                console.error('Lỗi khi tìm kiếm:', searchError);
+                message.error('Không thể tìm kiếm sản phẩm, hiển thị tất cả sản phẩm');
+                
+                // Nếu tìm kiếm thất bại, lấy tất cả sản phẩm
+                const allData = await getAllProducts();
+                setProducts(allData);
+            }
+        } catch (error) {
+            console.error('Lỗi khi tìm kiếm sản phẩm:', error);
+            message.error('Không thể tìm kiếm sản phẩm');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <>
             <Content className="min-h-[120px] flex flex-col items-center bg-gray-200 px-8 py-8">
                 <div className="flex gap-4 w-full max-w-5xl mb-4">
-                    <Input placeholder="Nhập tên sản phẩm" className="flex-1" />
+                    <Input 
+                        placeholder="Nhập tên sản phẩm" 
+                        className="flex-1" 
+                        value={searchName}
+                        onChange={(e) => setSearchName(e.target.value)}
+                        onPressEnter={handleSearch}
+                    />
                     <Button onClick={() => setShowAdvanced((v) => !v)}>
                         {showAdvanced ? 'Ẩn tiêu chí' : 'Tìm theo tiêu chí khác'}
                     </Button>
-                    <Button type="primary" icon={<SearchOutlined />} className="w-32">
+                    <Button 
+                        type="primary" 
+                        icon={<SearchOutlined />} 
+                        className="w-32"
+                        onClick={handleSearch}
+                    >
                         Tìm kiếm
                     </Button>
                 </div>
                 {showAdvanced && (
                     <div className="w-full max-w-5xl bg-white rounded shadow p-8 mb-5">
-                        <Form layout="vertical">
-                            <div className="grid grid-cols-3 gap-6 items-end">
+                        <Form form={form} layout="vertical">
+                            <div className="grid grid-cols-2 gap-6 items-end">
                                 <Form.Item label="Danh mục" name="category" className="mb-0">
                                     <Select placeholder="Chọn danh mục">
                                         <Select.Option value="all">Tất cả</Select.Option>
-                                        <Select.Option value="thoi-trang">Thời trang</Select.Option>
-                                        <Select.Option value="dien-tu">Điện tử</Select.Option>
+                                        {categories.map((category, index) => (
+                                            <Select.Option key={index} value={category}>
+                                                {category}
+                                            </Select.Option>
+                                        ))}
                                     </Select>
+                                </Form.Item>
+                                <Form.Item label="Thương hiệu" name="brand" className="mb-0">
+                                    <Input placeholder="Nhập thương hiệu" />
                                 </Form.Item>
                                 <Form.Item label="Giá từ" name="priceFrom" className="mb-0">
                                     <InputNumber className="w-full" placeholder="Giá từ" min={0} />
@@ -103,21 +241,11 @@ export default function ProductList() {
                                 <Form.Item label="Giá đến" name="priceTo" className="mb-0">
                                     <InputNumber className="w-full" placeholder="Giá đến" min={0} />
                                 </Form.Item>
-                                <Form.Item label="Công suất từ" name="powerFrom" className="mb-0">
+                                <Form.Item label="Công suất từ" name="powerFrom" className="mb-0 col-span-1">
                                     <InputNumber className="w-full" placeholder="Công suất từ" min={0} />
                                 </Form.Item>
-                                <Form.Item label="Công suất đến" name="powerTo" className="mb-0">
+                                <Form.Item label="Công suất đến" name="powerTo" className="mb-0 col-span-1">
                                     <InputNumber className="w-full" placeholder="Công suất đến" min={0} />
-                                </Form.Item>
-                                <Form.Item label="Số sao" name="star" className="mb-0">
-                                    <Select placeholder="Chọn số sao">
-                                        <Select.Option value="all">Tất cả</Select.Option>
-                                        <Select.Option value="1">1 Sao</Select.Option>
-                                        <Select.Option value="2">2 Sao</Select.Option>
-                                        <Select.Option value="3">3 Sao</Select.Option>
-                                        <Select.Option value="4">4 Sao</Select.Option>
-                                        <Select.Option value="5">5 Sao</Select.Option>
-                                    </Select>
                                 </Form.Item>
                             </div>
                         </Form>
@@ -153,8 +281,10 @@ export default function ProductList() {
                     open={isAddModalOpen}
                     onOk={handleAddOk}
                     onCancel={handleAddCancel}
-                    newProduct={{}}
-                    onInputChange={() => {}}
+                    newProduct={newProduct}
+                    onInputChange={handleInputChange}
+                    onCustomInputChange={handleCustomInputChange}
+                    categories={categories}
                 />
 
                 <DeleteModal
@@ -167,6 +297,30 @@ export default function ProductList() {
         </>
     );
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

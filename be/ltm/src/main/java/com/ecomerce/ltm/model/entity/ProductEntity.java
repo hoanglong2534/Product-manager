@@ -37,7 +37,7 @@ public class ProductEntity {
     private int power;
 
     @Column(name = "rating" , nullable = false)
-    private double rating;
+    private Double rating;
 
     @Column(name = "stock", nullable = false)
     private int stock;

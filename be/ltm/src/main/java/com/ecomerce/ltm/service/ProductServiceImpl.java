@@ -6,6 +6,7 @@ import com.ecomerce.ltm.model.entity.ProductEntity;
 import com.ecomerce.ltm.repository.ProductRepository;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -23,6 +24,7 @@ public class ProductServiceImpl implements ProductService {
     public List<ProductEntity> getAllProducts() {
         return productRepository.findAll();
     }
+
     @Override
     public void updateProduct(Long id, ProductUpdateDTO productUpdateDTO) {
         ProductEntity product = productRepository.findById(id).orElse(null);
@@ -30,39 +32,39 @@ public class ProductServiceImpl implements ProductService {
             throw new RuntimeException("Không có sản phẩm nào với id: " + id);
         }
         boolean isUpdated = false;
-        if(!product.getName().equals(productUpdateDTO.getName())) {
+        if (!product.getName().equals(productUpdateDTO.getName())) {
             product.setName(productUpdateDTO.getName());
             isUpdated = true;
         }
-        if(!product.getDescription().equals(productUpdateDTO.getDescription())) {
+        if (!product.getDescription().equals(productUpdateDTO.getDescription())) {
             product.setDescription(productUpdateDTO.getDescription());
             isUpdated = true;
         }
-        if(product.getPrice() != productUpdateDTO.getPrice()) {
+        if (product.getPrice() != productUpdateDTO.getPrice()) {
             product.setPrice(productUpdateDTO.getPrice());
             isUpdated = true;
         }
-        if(!product.getBrand().equals(productUpdateDTO.getBrand())) {
+        if (!product.getBrand().equals(productUpdateDTO.getBrand())) {
             product.setBrand(productUpdateDTO.getBrand());
             isUpdated = true;
         }
-        if(!product.getCategory().equals(productUpdateDTO.getCategory())) {
+        if (!product.getCategory().equals(productUpdateDTO.getCategory())) {
             product.setCategory(productUpdateDTO.getCategory());
             isUpdated = true;
         }
-        if(product.getPower() != productUpdateDTO.getPower()) {
+        if (product.getPower() != productUpdateDTO.getPower()) {
             product.setPower(productUpdateDTO.getPower());
             isUpdated = true;
         }
-        if(product.getRating() != productUpdateDTO.getRating()) {
+        if (product.getRating() != productUpdateDTO.getRating()) {
             product.setRating(productUpdateDTO.getRating());
             isUpdated = true;
         }
-        if(product.getStock() != productUpdateDTO.getStock()) {
+        if (product.getStock() != productUpdateDTO.getStock()) {
             product.setStock(productUpdateDTO.getStock());
             isUpdated = true;
         }
-        if(isUpdated) {
+        if (isUpdated) {
             productRepository.save(product);
         }
 
@@ -104,34 +106,34 @@ public class ProductServiceImpl implements ProductService {
                     .collect(Collectors.toList());
         }
 
-        // Lọc theo sao
-        if (searchDTO.getRating() > 0) {
-            double rating = searchDTO.getRating();
+        // Lọc theo thương hiệu
+        if (searchDTO.getBrand() != null && !searchDTO.getBrand().isEmpty()) {
+            String brand = searchDTO.getBrand().toLowerCase();
             products = products.stream()
-                    .filter(p -> p.getRating() == rating)
+                    .filter(p -> p.getBrand().toLowerCase().equals(brand))
                     .collect(Collectors.toList());
         }
         // Lọc theo giá
-        if (searchDTO.getPriceFrom() > 0) {
+        if (searchDTO.getPriceFrom() != null && searchDTO.getPriceFrom() > 0) {
             products = products.stream()
                     .filter(p -> p.getPrice() >= searchDTO.getPriceFrom())
                     .collect(Collectors.toList());
         }
 
-        if (searchDTO.getPriceTo() > 0) {
+        if (searchDTO.getPriceTo() != null && searchDTO.getPriceTo() > 0) {
             products = products.stream()
                     .filter(p -> p.getPrice() <= searchDTO.getPriceTo())
                     .collect(Collectors.toList());
         }
 
         // Lọc theo công suất
-        if (searchDTO.getPowerFrom() > 0) {
+        if (searchDTO.getPowerFrom() != null && searchDTO.getPowerFrom() > 0) {
             products = products.stream()
                     .filter(p -> p.getPower() >= searchDTO.getPowerFrom())
                     .collect(Collectors.toList());
         }
 
-        if (searchDTO.getPowerTo() > 0) {
+        if (searchDTO.getPowerTo() != null && searchDTO.getPowerTo() > 0) {
             products = products.stream()
                     .filter(p -> p.getPower() <= searchDTO.getPowerTo())
                     .collect(Collectors.toList());

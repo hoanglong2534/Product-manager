@@ -12,9 +12,9 @@ import lombok.Setter;
 public class ProductSearchDTO {
     private String name;
     private String category;
-    private int priceFrom;
-    private int priceTo;
-    private int powerFrom;
-    private int powerTo;
-    private Double rating;
+    private Integer priceFrom;
+    private Integer priceTo;
+    private Integer powerFrom;
+    private Integer powerTo;
+    private String brand;
 }
