@@ -9,7 +9,7 @@ public interface ProductService {
 
     void updateProduct(Long id, ProductUpdateDTO productUpdateDTO);
 
-    void deleteProduct(Long id);
+    void deleteProduct(List<Long> id);
 
     ProductEntity getProductById(Long id);
 

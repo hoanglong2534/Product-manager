@@ -1,52 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Table, Button, Space, message } from 'antd';
 import DeleteModal from './DeleteModal';
 import EditModal from './EditModal';
-import { getAllProducts } from '../api/getAllProduct';
 import { updateProduct } from '../api/updateProduct';
+import { deleteProduct } from '../api/deleteProduct';
 
-const ProductTable = () => {
+const ProductTable = ({ rowSelection, data = [], loading = false }) => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
-  const [data, setData] = useState([]);
-
-  useEffect(() => {
-    fetchProducts();
-  }, []);
-
-  const fetchProducts = async () => {
-    try {
-      const products = await getAllProducts();
-      console.log('Dữ liệu từ API:', products); // Kiểm tra dữ liệu từ API
-
-      // Kiểm tra cấu trúc dữ liệu
-      if (Array.isArray(products)) {
-        setData(products);
-      } else if (products && typeof products === 'object') {
-        console.log('API trả về object, không phải array');
-        const possibleArrays = Object.values(products).filter(val => Array.isArray(val));
-        if (possibleArrays.length > 0) {
-          setData(possibleArrays[0]);
-        }
-      }
-    } catch (error) {
-      console.error('Chi tiết lỗi:', error);
-      message.error('Không thể tải danh sách sản phẩm');
-    }
-  };
-
-  const showModal = () => {
-    setIsModalOpen(true);
-  };
-
-  const handleOk = () => {
-    setIsModalOpen(false);
-  };
-
-  const handleCancel = () => {
-    setIsModalOpen(false);
-  };
+  const [productToDelete, setProductToDelete] = useState(null);
 
   const handleEdit = (id) => {
     const product = data.find((item) => item.id === id);
@@ -58,20 +21,44 @@ const ProductTable = () => {
     }
   };
 
+  const handleDelete = (record) => {
+    setProductToDelete(record);
+    setIsDeleteModalOpen(true);
+  };
+
   const handleEditOk = async () => {
     try {
       await updateProduct(selectedProduct.id, selectedProduct);
       message.success('Cập nhật thành công');
       setIsEditModalOpen(false);
-      fetchProducts();
+      window.location.reload(); // Tải lại trang sau khi cập nhật
     } catch (error) {
-      // Hiển thị thông báo lỗi đơn giản
       message.error('Không thể cập nhật sản phẩm');
     }
   };
 
   const handleEditCancel = () => {
     setIsEditModalOpen(false);
+  };
+
+  const handleDeleteOk = async () => {
+    try {
+      if (productToDelete && productToDelete.id) {
+        await deleteProduct(productToDelete.id);
+        message.success('Xóa sản phẩm thành công');
+        window.location.reload(); // Tải lại trang sau khi xóa
+      }
+    } catch (error) {
+      console.error('Lỗi khi xóa sản phẩm:', error);
+      message.error('Không thể xóa sản phẩm');
+    }
+    setIsDeleteModalOpen(false);
+    setProductToDelete(null);
+  };
+
+  const handleDeleteCancel = () => {
+    setIsDeleteModalOpen(false);
+    setProductToDelete(null);
   };
 
   const handleInputChange = (e) => {
@@ -101,7 +88,7 @@ const ProductTable = () => {
           <Button type="default" onClick={() => handleEdit(record.id)}>
             Sửa
           </Button>
-          <Button type="default" danger onClick={showModal}>
+          <Button type="default" danger onClick={() => handleDelete(record)}>
             Xóa
           </Button>
         </Space>
@@ -110,17 +97,22 @@ const ProductTable = () => {
   ];
 
   return (
-    <div style={{ padding: 24 }}>
-
+    <div>
       <Table
+        loading={loading}
         columns={columns}
         dataSource={data}
         rowKey="id"
-        rowSelection={{}}
+        rowSelection={rowSelection}
         pagination={{ pageSize: 10 }}
-
       />
-      <DeleteModal open={isModalOpen} onOk={handleOk} onCancel={handleCancel} />
+      <DeleteModal 
+        open={isDeleteModalOpen} 
+        onOk={handleDeleteOk} 
+        onCancel={handleDeleteCancel} 
+        productId={productToDelete?.id}
+        productName={productToDelete?.name}
+      />
       <EditModal
         open={isEditModalOpen}
         product={selectedProduct}

@@ -1,33 +1,77 @@
-import { Layout, Button, Input, Form, Select, InputNumber } from 'antd';
+import { Layout, Button, Input, Form, Select, InputNumber, message } from 'antd';
 import { SearchOutlined } from '@ant-design/icons';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import ProductTable from './ProductTable';
-import AddModal from './AddModal'; // Import AddModal
-import DeleteModal from './DeleteModal'; // Import DeleteModal
+import AddModal from './AddModal';
+import DeleteModal from './DeleteModal';
+import { deleteProducts } from '../api/deleteProduct';
+import { getAllProducts } from '../api/getAllProduct';
 
 const { Content } = Layout;
 
 export default function ProductList() {
+    // Định nghĩa tất cả state ở đầu component
     const [showAdvanced, setShowAdvanced] = useState(false);
-    const [isAddModalOpen, setIsAddModalOpen] = useState(false); // State cho modal thêm sản phẩm
-    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false); // State cho modal xóa sản phẩm
+    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+    const [products, setProducts] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    // Tải danh sách sản phẩm khi component mount
+    useEffect(() => {
+        const fetchProducts = async () => {
+            try {
+                setLoading(true);
+                const data = await getAllProducts();
+                setProducts(data);
+                setLoading(false);
+            } catch (error) {
+                console.error('Lỗi khi tải danh sách sản phẩm:', error);
+                message.error('Không thể tải danh sách sản phẩm');
+                setLoading(false);
+            }
+        };
+
+        fetchProducts();
+    }, []);
 
     const handleAddOk = () => {
         setIsAddModalOpen(false);
-        // Thêm logic để lưu sản phẩm mới nếu cần
     };
 
     const handleAddCancel = () => {
         setIsAddModalOpen(false);
     };
 
-    const handleDeleteOk = () => {
+    const handleDeleteOk = async () => {
+        if (selectedRowKeys.length > 0) {
+            try {
+                await deleteProducts(selectedRowKeys);
+                message.success('Xóa sản phẩm thành công');
+                window.location.reload();
+            } catch (error) {
+                console.error('Lỗi khi xóa sản phẩm:', error);
+                message.error('Không thể xóa sản phẩm');
+            }
+        } else {
+            message.warning('Vui lòng chọn sản phẩm cần xóa');
+        }
         setIsDeleteModalOpen(false);
-        // Thêm logic để xóa sản phẩm nếu cần
     };
 
     const handleDeleteCancel = () => {
         setIsDeleteModalOpen(false);
+    };
+
+    const onSelectChange = (newSelectedRowKeys) => {
+        console.log('Đã chọn các hàng:', newSelectedRowKeys);
+        setSelectedRowKeys(newSelectedRowKeys);
+    };
+
+    const rowSelection = {
+        selectedRowKeys,
+        onChange: onSelectChange,
     };
 
     return (
@@ -87,28 +131,43 @@ export default function ProductList() {
                             <Button type="primary" shape="round" onClick={() => setIsAddModalOpen(true)}>
                                 Thêm sản phẩm
                             </Button>
-                            <Button type="primary" shape="round" onClick={() => setIsDeleteModalOpen(true)}>
-                                Xóa
+                            <Button 
+                                type="primary" 
+                                danger 
+                                shape="round" 
+                                onClick={() => setIsDeleteModalOpen(true)}
+                                disabled={selectedRowKeys.length === 0}
+                            >
+                                Xóa ({selectedRowKeys.length})
                             </Button>
                         </div>
                     </div>
-                    <ProductTable />
+                    <ProductTable 
+                        rowSelection={rowSelection} 
+                        data={products} 
+                        loading={loading} 
+                    />
                 </div>
 
                 <AddModal
                     open={isAddModalOpen}
                     onOk={handleAddOk}
                     onCancel={handleAddCancel}
-                    newProduct={{}} // Truyền sản phẩm mới nếu cần
-                    onInputChange={() => { }} // Thêm logic xử lý nếu cần
+                    newProduct={{}}
+                    onInputChange={() => {}}
                 />
 
                 <DeleteModal
                     open={isDeleteModalOpen}
                     onOk={handleDeleteOk}
                     onCancel={handleDeleteCancel}
+                    selectedIds={selectedRowKeys}
                 />
             </Content>
         </>
     );
 }
+
+
+
+
