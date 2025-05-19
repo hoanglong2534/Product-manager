@@ -1,5 +1,6 @@
 package com.ecomerce.ltm.service;
 
+import com.ecomerce.ltm.model.dto.ProductUpdateDTO;
 import com.ecomerce.ltm.model.entity.ProductEntity;
 import com.ecomerce.ltm.repository.ProductRepository;
 import org.springframework.stereotype.Service;
@@ -21,7 +22,47 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public void updateProduct(Long id, String name, String description, double price, String brand, String category, int power, double rating, int stock) {
+    public void updateProduct(Long id, ProductUpdateDTO productUpdateDTO) {
+        ProductEntity product = productRepository.findById(id).orElse(null);
+        if (product == null) {
+            throw new RuntimeException("Không có sản phẩm nào với id: " + id);
+        }
+        boolean isUpdated = false;
+        if(!product.getName().equals(productUpdateDTO.getName())) {
+            product.setName(productUpdateDTO.getName());
+            isUpdated = true;
+        }
+        if(!product.getDescription().equals(productUpdateDTO.getDescription())) {
+            product.setDescription(productUpdateDTO.getDescription());
+            isUpdated = true;
+        }
+        if(product.getPrice() != productUpdateDTO.getPrice()) {
+            product.setPrice(productUpdateDTO.getPrice());
+            isUpdated = true;
+        }
+        if(!product.getBrand().equals(productUpdateDTO.getBrand())) {
+            product.setBrand(productUpdateDTO.getBrand());
+            isUpdated = true;
+        }
+        if(!product.getCategory().equals(productUpdateDTO.getCategory())) {
+            product.setCategory(productUpdateDTO.getCategory());
+            isUpdated = true;
+        }
+        if(product.getPower() != productUpdateDTO.getPower()) {
+            product.setPower(productUpdateDTO.getPower());
+            isUpdated = true;
+        }
+        if(product.getRating() != productUpdateDTO.getRating()) {
+            product.setRating(productUpdateDTO.getRating());
+            isUpdated = true;
+        }
+        if(product.getStock() != productUpdateDTO.getStock()) {
+            product.setStock(productUpdateDTO.getStock());
+            isUpdated = true;
+        }
+        if(isUpdated) {
+            productRepository.save(product);
+        }
 
     }
 

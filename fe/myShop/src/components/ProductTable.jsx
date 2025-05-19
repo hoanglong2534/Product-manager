@@ -3,7 +3,7 @@ import { Table, Button, Space, message } from 'antd';
 import DeleteModal from './DeleteModal';
 import EditModal from './EditModal';
 import { getAllProducts } from '../api/getAllProduct';
-
+import { updateProduct } from '../api/updateProduct';
 
 const ProductTable = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -19,7 +19,7 @@ const ProductTable = () => {
     try {
       const products = await getAllProducts();
       console.log('Dữ liệu từ API:', products); // Kiểm tra dữ liệu từ API
-      
+
       // Kiểm tra cấu trúc dữ liệu
       if (Array.isArray(products)) {
         setData(products);
@@ -31,9 +31,9 @@ const ProductTable = () => {
         }
       }
     } catch (error) {
-      console.error('Chi tiết lỗi:', error); 
+      console.error('Chi tiết lỗi:', error);
       message.error('Không thể tải danh sách sản phẩm');
-    } 
+    }
   };
 
   const showModal = () => {
@@ -50,14 +50,24 @@ const ProductTable = () => {
 
   const handleEdit = (id) => {
     const product = data.find((item) => item.id === id);
-    setSelectedProduct(product);
-    setIsEditModalOpen(true);
+    if (product) {
+      setSelectedProduct(product);
+      setIsEditModalOpen(true);
+    } else {
+      message.warning('Không tìm thấy sản phẩm');
+    }
   };
 
-  const handleEditOk = () => {
-    console.log('Cập nhật sản phẩm:', selectedProduct);
-    setIsEditModalOpen(false);
-    // Thêm logic lưu thay đổi, ví dụ gọi API cập nhật sản phẩm
+  const handleEditOk = async () => {
+    try {
+      await updateProduct(selectedProduct.id, selectedProduct);
+      message.success('Cập nhật thành công');
+      setIsEditModalOpen(false);
+      fetchProducts();
+    } catch (error) {
+      // Hiển thị thông báo lỗi đơn giản
+      message.error('Không thể cập nhật sản phẩm');
+    }
   };
 
   const handleEditCancel = () => {
@@ -73,10 +83,10 @@ const ProductTable = () => {
     { title: 'ID', dataIndex: 'id' },
     { title: 'Tên sản phẩm', dataIndex: 'name' },
     { title: 'Mô tả', dataIndex: 'description' },
-    { 
-      title: 'Giá (VNĐ)', 
-      dataIndex: 'price', 
-      render: (price) => price ? price.toLocaleString('vi-VN') : '0' 
+    {
+      title: 'Giá (VNĐ)',
+      dataIndex: 'price',
+      render: (price) => price ? price.toLocaleString('vi-VN') : '0'
     },
     { title: 'Thương hiệu', dataIndex: 'brand' },
     { title: 'Loại', dataIndex: 'category' },
@@ -101,14 +111,14 @@ const ProductTable = () => {
 
   return (
     <div style={{ padding: 24 }}>
-    
-      <Table 
-        columns={columns} 
-        dataSource={data} 
-        rowKey="id" 
-        rowSelection={{}} 
+
+      <Table
+        columns={columns}
+        dataSource={data}
+        rowKey="id"
+        rowSelection={{}}
         pagination={{ pageSize: 10 }}
-      
+
       />
       <DeleteModal open={isModalOpen} onOk={handleOk} onCancel={handleCancel} />
       <EditModal
