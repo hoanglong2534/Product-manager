@@ -5,7 +5,7 @@ import EditModal from './EditModal';
 import { updateProduct } from '../api/updateProduct';
 import { deleteProduct } from '../api/deleteProduct';
 
-const ProductTable = ({ rowSelection, data = [], loading = false }) => {
+const ProductTable = ({ rowSelection, data = [], loading = false, onDataUpdate }) => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
@@ -31,7 +31,16 @@ const ProductTable = ({ rowSelection, data = [], loading = false }) => {
       await updateProduct(selectedProduct.id, selectedProduct);
       message.success('Cập nhật thành công');
       setIsEditModalOpen(false);
-      window.location.reload(); // Tải lại trang sau khi cập nhật
+      // Loại bỏ window.location.reload() để không tải lại trang
+      
+      // Cập nhật dữ liệu trong state
+      const updatedData = data.map(item => 
+        item.id === selectedProduct.id ? selectedProduct : item
+      );
+      // Nếu component cha có hàm callback để cập nhật dữ liệu
+      if (onDataUpdate) {
+        onDataUpdate(updatedData);
+      }
     } catch (error) {
       message.error('Không thể cập nhật sản phẩm');
     }
@@ -46,7 +55,14 @@ const ProductTable = ({ rowSelection, data = [], loading = false }) => {
       if (productToDelete && productToDelete.id) {
         await deleteProduct(productToDelete.id);
         message.success('Xóa sản phẩm thành công');
-        window.location.reload(); // Tải lại trang sau khi xóa
+        // Loại bỏ window.location.reload() để không tải lại trang
+        
+        // Cập nhật dữ liệu trong state
+        const updatedData = data.filter(item => item.id !== productToDelete.id);
+        // Nếu component cha có hàm callback để cập nhật dữ liệu
+        if (onDataUpdate) {
+          onDataUpdate(updatedData);
+        }
       }
     } catch (error) {
       console.error('Lỗi khi xóa sản phẩm:', error);

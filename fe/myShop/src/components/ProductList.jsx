@@ -83,6 +83,12 @@ export default function ProductList() {
             // Tải lại danh sách sản phẩm
             const data = await getAllProducts();
             setProducts(data);
+            
+            // Tải lại danh sách categories
+            const searchOptions = await getSearchOptions();
+            if (searchOptions && searchOptions.categories) {
+                setCategories(searchOptions.categories);
+            }
         } catch (error) {
             console.error('Lỗi khi thêm sản phẩm:', error);
             message.error('Không thể thêm sản phẩm');
@@ -98,7 +104,14 @@ export default function ProductList() {
             try {
                 await deleteProducts(selectedRowKeys);
                 message.success('Xóa sản phẩm thành công');
-                window.location.reload();
+                
+                // Cập nhật state để loại bỏ các sản phẩm đã xóa
+                setProducts(prevProducts => 
+                    prevProducts.filter(product => !selectedRowKeys.includes(product.id))
+                );
+                
+                // Reset selectedRowKeys
+                setSelectedRowKeys([]);
             } catch (error) {
                 console.error('Lỗi khi xóa sản phẩm:', error);
                 message.error('Không thể xóa sản phẩm');
@@ -195,6 +208,11 @@ export default function ProductList() {
         }
     };
 
+    // Thêm hàm xử lý cập nhật dữ liệu từ ProductTable
+    const handleProductDataUpdate = (updatedData) => {
+        setProducts(updatedData);
+    };
+
     return (
         <>
             <Content className="min-h-[120px] flex flex-col items-center bg-gray-200 px-8 py-8">
@@ -273,7 +291,8 @@ export default function ProductList() {
                     <ProductTable 
                         rowSelection={rowSelection} 
                         data={products} 
-                        loading={loading} 
+                        loading={loading}
+                        onDataUpdate={handleProductDataUpdate}
                     />
                 </div>
 

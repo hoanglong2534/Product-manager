@@ -1,5 +1,5 @@
 
-import { Modal, message } from 'antd';
+import { Modal } from 'antd';
 import { deleteProduct, deleteProducts } from '../api/deleteProduct';
 
 const DeleteModal = ({ open, onOk, onCancel, productId, productName, selectedIds }) => {
@@ -8,22 +8,22 @@ const DeleteModal = ({ open, onOk, onCancel, productId, productName, selectedIds
       // Nếu có selectedIds, xóa nhiều sản phẩm
       if (selectedIds && selectedIds.length > 0) {
         await deleteProducts(selectedIds);
-        message.success('Xóa sản phẩm thành công');
+        // Đã loại bỏ message.success để tránh hiển thị 2 lần
       } 
       // Nếu có productId, xóa một sản phẩm
       else if (productId) {
         await deleteProduct(productId);
-        message.success('Xóa sản phẩm thành công');
+        // Đã loại bỏ message.success để tránh hiển thị 2 lần
       }
       
       // Gọi callback onOk để thông báo xóa thành công
       onOk();
       
-      // Tải lại trang sau khi xóa thành công
-      window.location.reload();
+      // Đã loại bỏ window.location.reload() để không tải lại trang
     } catch (error) {
       console.error('Lỗi khi xóa sản phẩm:', error);
-      message.error('Không thể xóa sản phẩm');
+      onCancel(); // Đóng modal khi có lỗi
+      throw error; // Ném lỗi để component cha xử lý
     }
   };
 
