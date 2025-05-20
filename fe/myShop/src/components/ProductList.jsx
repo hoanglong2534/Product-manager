@@ -73,6 +73,19 @@ export default function ProductList() {
         fetchSearchOptions();
     }, []);
 
+    // Thêm hàm riêng để tải lại danh sách categories
+    const reloadCategories = async () => {
+        try {
+            const data = await getSearchOptions();
+            if (data && data.categories) {
+                console.log('Tải lại categories:', data.categories);
+                setCategories(data.categories);
+            }
+        } catch (error) {
+            console.error('Lỗi khi tải lại danh sách categories:', error);
+        }
+    };
+
     const handleAddOk = async () => {
         try {
             await addProduct(newProduct);
@@ -85,10 +98,7 @@ export default function ProductList() {
             setProducts(data);
             
             // Tải lại danh sách categories
-            const searchOptions = await getSearchOptions();
-            if (searchOptions && searchOptions.categories) {
-                setCategories(searchOptions.categories);
-            }
+            await reloadCategories();
         } catch (error) {
             console.error('Lỗi khi thêm sản phẩm:', error);
             message.error('Không thể thêm sản phẩm');
@@ -213,6 +223,11 @@ export default function ProductList() {
         setProducts(updatedData);
     };
 
+    // Thêm hàm xử lý cập nhật categories
+    const handleCategoriesUpdate = async () => {
+        await reloadCategories();
+    };
+
     return (
         <>
             <Content className="min-h-[120px] flex flex-col items-center bg-gray-200 px-8 py-8">
@@ -241,7 +256,7 @@ export default function ProductList() {
                         <Form form={form} layout="vertical">
                             <div className="grid grid-cols-2 gap-6 items-end">
                                 <Form.Item label="Danh mục" name="category" className="mb-0">
-                                    <Select placeholder="Chọn danh mục">
+                                    <Select placeholder="Chọn danh mục" key={categories.length}>
                                         <Select.Option value="all">Tất cả</Select.Option>
                                         {categories.map((category, index) => (
                                             <Select.Option key={index} value={category}>
@@ -293,6 +308,7 @@ export default function ProductList() {
                         data={products} 
                         loading={loading}
                         onDataUpdate={handleProductDataUpdate}
+                        onCategoriesUpdate={handleCategoriesUpdate}
                     />
                 </div>
 
