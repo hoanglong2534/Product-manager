@@ -28,7 +28,7 @@ const ProductTable = ({ rowSelection, data = [], loading = false, onDataUpdate, 
 
   const handleEditOk = async () => {
     try {
-      // Lưu category cũ trước khi cập nhật
+      
       const oldProduct = data.find(item => item.id === selectedProduct.id);
       const oldCategory = oldProduct ? oldProduct.category : null;
       
@@ -36,19 +36,16 @@ const ProductTable = ({ rowSelection, data = [], loading = false, onDataUpdate, 
       message.success('Cập nhật thành công');
       setIsEditModalOpen(false);
       
-      // Cập nhật dữ liệu trong state
+
       const updatedData = data.map(item => 
         item.id === selectedProduct.id ? selectedProduct : item
       );
       
-      // Nếu component cha có hàm callback để cập nhật dữ liệu
       if (onDataUpdate) {
         onDataUpdate(updatedData);
       }
       
-      // Nếu category đã thay đổi và component cha có hàm callback để cập nhật categories
       if (oldCategory !== selectedProduct.category && onCategoriesUpdate) {
-        // Gọi callback để tải lại danh sách categories
         onCategoriesUpdate();
       }
     } catch (error) {

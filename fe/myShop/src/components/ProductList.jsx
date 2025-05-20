@@ -13,7 +13,7 @@ import { addProduct } from '../api/addProduct';
 const { Content } = Layout;
 
 export default function ProductList() {
-    // Định nghĩa tất cả state ở đầu component
+    
     const [showAdvanced, setShowAdvanced] = useState(false);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -25,18 +25,18 @@ export default function ProductList() {
     const [searchName, setSearchName] = useState('');
     const [form] = Form.useForm();
 
-    // Thêm hàm xử lý thay đổi input cho form thêm sản phẩm
+    
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setNewProduct(prev => ({ ...prev, [name]: value }));
     };
 
-    // Xử lý thay đổi cho các input không phải là input thông thường (như Select, InputNumber)
+    
     const handleCustomInputChange = (name, value) => {
         setNewProduct(prev => ({ ...prev, [name]: value }));
     };
 
-    // Tải danh sách sản phẩm khi component mount
+   
     useEffect(() => {
         const fetchProducts = async () => {
             try {
@@ -54,14 +54,14 @@ export default function ProductList() {
         fetchProducts();
     }, []);
 
-    // Tải dữ liệu tìm kiếm
+
     useEffect(() => {
         const fetchSearchOptions = async () => {
             try {
                 const data = await getSearchOptions();
                 console.log('Dữ liệu tìm kiếm:', data);
                 
-                // Cập nhật state với dữ liệu từ API
+                
                 if (data && data.categories) {
                     setCategories(data.categories);
                 }
@@ -73,7 +73,7 @@ export default function ProductList() {
         fetchSearchOptions();
     }, []);
 
-    // Thêm hàm riêng để tải lại danh sách categories
+
     const reloadCategories = async () => {
         try {
             const data = await getSearchOptions();
@@ -93,11 +93,11 @@ export default function ProductList() {
             setIsAddModalOpen(false);
             setNewProduct({});
             
-            // Tải lại danh sách sản phẩm
+          
             const data = await getAllProducts();
             setProducts(data);
             
-            // Tải lại danh sách categories
+            
             await reloadCategories();
         } catch (error) {
             console.error('Lỗi khi thêm sản phẩm:', error);
@@ -115,12 +115,12 @@ export default function ProductList() {
                 await deleteProducts(selectedRowKeys);
                 message.success('Xóa sản phẩm thành công');
                 
-                // Cập nhật state để loại bỏ các sản phẩm đã xóa
+                
                 setProducts(prevProducts => 
                     prevProducts.filter(product => !selectedRowKeys.includes(product.id))
                 );
                 
-                // Reset selectedRowKeys
+               
                 setSelectedRowKeys([]);
             } catch (error) {
                 console.error('Lỗi khi xóa sản phẩm:', error);
@@ -150,7 +150,7 @@ export default function ProductList() {
         try {
             setLoading(true);
             
-            // Lấy giá trị từ form
+           
             let values = {};
             if (showAdvanced) {
                 try {
@@ -160,13 +160,13 @@ export default function ProductList() {
                 }
             }
             
-            // Chuẩn bị dữ liệu tìm kiếm
+           
             const searchParams = {
                 name: searchName || undefined,
                 ...values
             };
             
-            // Loại bỏ các trường không có giá trị
+            
             Object.keys(searchParams).forEach(key => {
                 if (searchParams[key] === undefined || searchParams[key] === '' || searchParams[key] === null || searchParams[key] === 'all') {
                     delete searchParams[key];
@@ -175,7 +175,7 @@ export default function ProductList() {
             
             console.log('Tham số tìm kiếm:', searchParams);
             
-            // Kiểm tra xem có tham số tìm kiếm không
+          
             if (Object.keys(searchParams).length === 0) {
                 console.log('Không có tham số tìm kiếm, lấy tất cả sản phẩm');
                 const data = await getAllProducts();
@@ -184,7 +184,7 @@ export default function ProductList() {
                 return;
             }
             
-            // Gọi API tìm kiếm
+           
             try {
                 const data = await searchProducts(searchParams);
                 console.log('Kết quả tìm kiếm:', data);
@@ -198,7 +198,6 @@ export default function ProductList() {
                     console.error('Dữ liệu trả về không phải là mảng:', data);
                     message.error('Dữ liệu trả về không đúng định dạng');
                     
-                    // Nếu dữ liệu không phải mảng, lấy tất cả sản phẩm
                     const allData = await getAllProducts();
                     setProducts(allData);
                 }
@@ -206,7 +205,6 @@ export default function ProductList() {
                 console.error('Lỗi khi tìm kiếm:', searchError);
                 message.error('Không thể tìm kiếm sản phẩm, hiển thị tất cả sản phẩm');
                 
-                // Nếu tìm kiếm thất bại, lấy tất cả sản phẩm
                 const allData = await getAllProducts();
                 setProducts(allData);
             }
@@ -218,12 +216,10 @@ export default function ProductList() {
         }
     };
 
-    // Thêm hàm xử lý cập nhật dữ liệu từ ProductTable
     const handleProductDataUpdate = (updatedData) => {
         setProducts(updatedData);
     };
 
-    // Thêm hàm xử lý cập nhật categories
     const handleCategoriesUpdate = async () => {
         await reloadCategories();
     };
